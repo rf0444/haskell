@@ -1,0 +1,12 @@
+Name: sjson
+Version: 0.1
+
+Cabal-Version: >= 1.2
+
+library
+ Exposed-Modules:
+  SimpleJSON
+  PutJSON
+ Build-Depends:
+  base >= 2.0
+
