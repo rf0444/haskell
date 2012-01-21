@@ -1,0 +1,33 @@
+
+isort (5:2:7:4:[])
+
+isort 展開
+=> isort (5:2:7:4:[])
+-> insert 5 (isort (2:7:4[]))
+
+insert の展開で後ろのリストの先頭要素を要求するので、後ろ側の評価が必要
+=> insert 5 (isort (2:7:4[]))
+-> insert 5 (insert 2 (isort (7:4:[])))
+-> insert 5 (insert 2 (insert 7 (insert 4 [])))
+-> insert 5 (insert 2 (insert 7 (4:[])))
+
+insert を展開していく
+x > y なら y : insert x ys' に、 x <= y なら x : ys になる
+=> insert 5 (insert 2 (insert 7 (4:[])))
+-> insert 5 (insert 2 (4 : insert 7 []))
+-> insert 5 (2 : (4 : insert 7 []))
+-> 2 : insert 5 (4 : insert 7 [])
+先頭要素が確定 (ここまで O(n))
+
+同様に
+=> 2 : insert 5 (4 : insert 7 [])
+-> 2 : 4 : insert 5 (insert 7 [])
+第2要素が確定 (先頭要素が確定してから O(n))
+
+あと必要に応じて
+-> 2 : 4 : insert 5 (7:[])
+-> 2 : 4 : 5 : 7 : []
+
+第k要素が確定するまで、O(n) が k 回
+-> O(n*k)
+
