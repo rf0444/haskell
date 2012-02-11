@@ -1,7 +1,11 @@
+import System.IO
 import Control.Applicative
 
 main :: IO ()
-main = proc (/= "exit") >> putStrLn "exit program."
+main = do
+  hSetBuffering stdout NoBuffering
+  proc (/= "exit")
+  putStrLn "exit program."
  where
   proc :: (String -> Bool) -> IO [String]
   proc f = takeWhileM f procs
