@@ -23,7 +23,7 @@ takeWhileM f (x:xs) = do
   else return []
 
 inputs :: [IO String]
-inputs = getLine : inputs
+inputs = repeat getLine
 
 prompt :: String -> IO String -> IO String
 prompt = (>>) . putStr
