@@ -1,0 +1,16 @@
+
+
+OO と関数型について
+参考文献：
+	http://mew.org/~kazu/material/2011-haskell.pdf
+	http://practical-scheme.net/trans/reesoo-j.html
+
+Haskell における OO機能
+	ノート参照
+
+Haskell における OO実例
+	実際に デザインパターン やってみる
+	最終的に、こころにあるやつは全て、それ以外もいくつかやっておきたい
+	やる予定のデザインパターン
+		ノート参照
+
