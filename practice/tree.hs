@@ -14,15 +14,20 @@ data Node a = Node
   , children :: Tree a
   } deriving Show
 
-type Tree a = [Node a]
+newtype Tree a = Tree
+  { nodes :: [Node a]
+  } deriving Show
+
+instance Functor Tree where
+  fmap f = Tree . map (Node <$> f . value <*> fmap f . children) . nodes
 
 size :: Tree a -> Int
-size = sum . map (succ . size . children)
+size = sum . map (succ . size . children) . nodes
 
 mkTree :: [Record] -> Tree Record
 mkTree xs = children' 0
   where
-    children' i = maybe [] (map (Node <$> id <*> children' . ident)) (M.lookup i pmap)
+    children' i = Tree $ maybe [] (map (Node <$> id <*> children' . ident)) (M.lookup i pmap)
     pmap = mkBag $ map (parentId &&& id) xs
 
 mkBag :: Ord k => [(k, v)] -> M.Map k [v]
@@ -33,9 +38,9 @@ mkBag = foldr insertOrAdd M.empty
       | otherwise = M.insert k [v] m
 
 filterTree :: (a -> Bool) -> Tree a -> Tree a
-filterTree p = concatMap filterTree'
+filterTree p = Tree . concatMap filterTree' . nodes
   where
-    filterTree' (Node v c) = if not (null newc) || p v then [Node v newc] else []
+    filterTree' (Node v c) = if (not . null . nodes) newc || p v then [Node v newc] else []
       where
         newc = filterTree p c
 
@@ -43,12 +48,14 @@ main :: IO ()
 main = do
   print tree
   print $ size tree
+  putStrLn ""
   print $ tree'
   print $ size $ tree'
   where
-    byContentOrRoot text = (||) <$> (text `L.isInfixOf`) . content <*> (== 0) . parentId
     tree = mkTree list
-    tree' = filterTree (byContentOrRoot "test") tree
+    tree' = fmap (id &&& byContent "test") $ filterTree (byContentOrRoot "test") tree
+    byContent text = (text `L.isInfixOf`) . content
+    byContentOrRoot text = (||) <$> byContent text <*> (== 0) . parentId
     list =
       [ Record 1 0 "/1 root1"
       , Record 2 1 "/1/2 - test"
