@@ -1,22 +1,26 @@
-{-# LANGUAGE TemplateHaskell, QuasiQuotes #-}
+{-# LANGUAGE TemplateHaskell, QuasiQuotes, FlexibleInstances #-}
 
 module CHoge
   ( CHoge(hoge)
   , deriveCHoge
   ) where
 
-import Control.Applicative
 import Language.Haskell.TH
-import Language.Haskell.TH.Syntax
 
 class CHoge a where
-  hoge :: a -> String
+  hoge :: a -> IO ()
 
 deriveCHoge :: Name -> DecsQ
-deriveCHoge name = sequence
-  [ instanceD (cxt []) (appT (conT ''CHoge) (conT name))
-    [ funD 'hoge
-      [ clause [wildP] (normalB $ stringE "hoge") []
-      ]
-    ]
-  ]
+deriveCHoge name = do
+  (TyConI (DataD _ _ _ [RecC cname fields] _)) <- reify name
+  [d|
+    instance CHoge $(conT name) where
+      hoge x = $(doE $
+        [ noBindS [| putStrLn $(showNameE cname) |]
+        ] ++ map (noBindS . printFieldE 'x) fields)
+    |]
+  where
+    printFieldE vname (fname, _, _) =
+      [| putStrLn $ $(showNameE fname) ++ ": " ++ $(showValueE vname fname) |]
+    showNameE fname = stringE $ nameBase fname
+    showValueE vname fname = [| show $ $(varE fname) $(varE vname) |]
